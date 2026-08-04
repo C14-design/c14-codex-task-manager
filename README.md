@@ -11,7 +11,7 @@ It helps Codex:
 - recycle a finite naming pool without losing task history;
 - create and verify a successor before the manager retires itself.
 
-The bundled default naming convention uses Japanese actresses' common Chinese names. You can replace the pool in `SKILL.md` with any project convention.
+The bundled default naming convention randomly selects Japanese actresses' common Chinese names. On first use, the skill asks whether to use that default, provide a custom pool of favorite actresses or other names, or use ordinary descriptive titles.
 
 ## Install
 
@@ -31,6 +31,10 @@ Invoke the main manager:
 ```text
 $c14-codex-task-manager
 ```
+
+On the first invocation, choose a naming mode and whether to save it globally or only for the current project. A project configuration overrides the global preference. If you choose a custom pool, the manager removes duplicates, checks names across the project, and randomly selects an available name. Retired task names return to the pool.
+
+The skill cannot reliably display a prompt immediately after installation; onboarding happens the first time it is invoked.
 
 Example request:
 

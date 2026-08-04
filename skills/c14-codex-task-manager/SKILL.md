@@ -71,20 +71,36 @@ Send a bounded brief containing the exact objective, non-goals, authoritative ha
 
 Pin the manager and actively assigned workers. Unpin retired tasks. Avoid changing unrelated projects’ pins.
 
+## Configure naming on first use
+
+There is no reliable post-install hook, so perform naming onboarding on the first invocation of this skill.
+
+1. Look for a project override at `<project-root>/.codex/c14-codex-task-manager.json`, then a global preference at `${CODEX_HOME:-~/.codex}/c14-codex-task-manager.json`.
+2. If neither exists and the user has not already stated a convention, ask them to choose:
+   - the default Japanese-actress pool with random selection (recommended);
+   - a custom pool of their favorite actresses or other names;
+   - ordinary descriptive task titles.
+3. For a custom pool, collect the names, trim whitespace, remove exact duplicates while preserving the user’s display spelling, and require at least one usable name.
+4. Ask whether to save the choice globally or only for the current project. Explain the exact target path and write it only after the user chooses. A project setting overrides a global setting.
+5. If the user declines persistence, keep the choice for the current task only and explain that a future fresh task may ask again.
+6. Do not create or rename a worker until first-use naming is resolved. Allow the user to reconfigure it later on request.
+
+Store only `{"naming_mode":"default_actresses|custom_pool|descriptive","name_pool":[]}`. Populate `name_pool` only for `custom_pool`. Do not place transcripts, project secrets, repository state, or personal account data in this configuration.
+
 ## Name active workers
 
-Use the project’s configured naming convention. The default C14 convention uses an established Japanese actress’s common Chinese name, with no number or feature suffix unless the user explicitly requests one.
+Use the project setting, then the global setting, then the current-task choice. The default C14 convention randomly selects an established Japanese actress’s common Chinese name, with no number or feature suffix unless the user explicitly requests one.
 
 Before every create or rename:
 
 1. Refresh app and local-index titles for the full project namespace.
 2. Treat a non-retired title as reserving a candidate when it equals the name or starts with that name plus a suffix, separator, feature, date, or number.
 3. Do not treat a correctly formatted retired title beginning with `退役｜` as reserving the original name.
-4. Use the first available name from this default pool, then expand with another verified established name:
+4. Filter the configured pool to project-wide available names and randomly select from that set. The bundled default pool is:
    `小松菜奈`, `新垣结衣`, `石原里美`, `有村架纯`, `滨边美波`, `今田美樱`, `永野芽郁`, `川口春奈`, `上白石萌音`, `清原果耶`, `绫濑遥`, `北川景子`, `户田惠梨香`, `吉冈里帆`, `菜菜绪`, `山本美月`, `本田翼`, `武井咲`, `松冈茉优`, `二阶堂富美`.
-5. Refresh again immediately before mutation and continue to the next candidate if the name became reserved.
+5. Refresh again immediately before mutation and reroll from the remaining available set if the selected name became reserved.
 
-If the pool appears exhausted, retire eligible completed tasks first and repeat the check. Never add numbers merely to bypass a collision.
+If the pool is exhausted, retire eligible completed tasks and repeat the check, or ask the user to expand/change the pool. Never add numbers merely to bypass a collision.
 
 ## Retire and recycle a name
 
