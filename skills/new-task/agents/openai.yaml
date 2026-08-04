@@ -1,0 +1,4 @@
+interface:
+  display_name: "New Managed Task"
+  short_description: "Create and name a fresh managed Codex task"
+  default_prompt: "Use $new-task to create a fresh Codex task with a unique name and concise handoff."
