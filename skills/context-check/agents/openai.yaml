@@ -1,7 +1,0 @@
-interface:
-  display_name: "Context Check"
-  short_description: "Assess context cost and recommend a clean handoff"
-  default_prompt: "Use $context-check to assess whether this task should continue or hand off to a fresh task."
-
-policy:
-  allow_implicit_invocation: true

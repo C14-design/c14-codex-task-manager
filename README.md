@@ -32,14 +32,6 @@ Invoke the main manager:
 $c14-codex-task-manager
 ```
 
-Compatibility entry points are included:
-
-```text
-$context-check
-$new-task
-$new-task rename
-```
-
 Example request:
 
 ```text
@@ -57,8 +49,6 @@ Some capabilities depend on Codex desktop task-management tools. If those tools 
 ## Repository layout
 
 - `skills/c14-codex-task-manager/` — canonical skill
-- `skills/context-check/` — compatibility entry
-- `skills/new-task/` — compatibility entry
 
 ## License
 
