@@ -80,25 +80,38 @@ There is no reliable post-install hook, so perform naming onboarding on the firs
    - the default Japanese-actress pool with random selection (recommended);
    - a custom pool of their favorite actresses or other names;
    - ordinary descriptive task titles.
-3. For a custom pool, collect the names, trim whitespace, remove exact duplicates while preserving the user’s display spelling, and require at least one usable name.
-4. Ask whether to save the choice globally or only for the current project. Explain the exact target path and write it only after the user chooses. A project setting overrides a global setting.
-5. If the user declines persistence, keep the choice for the current task only and explain that a future fresh task may ask again.
-6. Do not create or rename a worker until first-use naming is resolved. Allow the user to reconfigure it later on request.
+3. Default `name_language` to `auto`; allow an explicit `zh`, `ja`, or `en` override.
+4. For a custom pool, accept plain display strings or localized records with a stable `id` and `zh`, `ja`, and `en` aliases. Trim whitespace, remove duplicate IDs and aliases, preserve the user’s display spelling, and require at least one usable entry.
+5. Ask whether to save the choice globally or only for the current project. Explain the exact target path and write it only after the user chooses. A project setting overrides a global setting.
+6. If the user declines persistence, keep the choice for the current task only and explain that a future fresh task may ask again.
+7. Do not create or rename a worker until first-use naming is resolved. Allow the user to reconfigure it later on request.
 
-Store only `{"naming_mode":"default_actresses|custom_pool|descriptive","name_pool":[]}`. Populate `name_pool` only for `custom_pool`. Do not place transcripts, project secrets, repository state, or personal account data in this configuration.
+Store only `{"naming_mode":"default_actresses|custom_pool|descriptive","name_language":"auto|zh|ja|en","resolved_name_language":"zh|ja|en","name_pool":[]}`. Omit `resolved_name_language` until `auto` is resolved, and populate `name_pool` only for `custom_pool`. Do not place transcripts, project secrets, repository state, or personal account data in this configuration.
+
+## Resolve the display language
+
+1. Use an explicit `zh`, `ja`, or `en` configuration first.
+2. For `auto`, reuse the project’s existing `resolved_name_language` when present.
+3. Otherwise, detect the dominant language of recent substantive user-authored chat messages.
+4. Ignore system/developer text, ambient browser context, webpages, tool output, logs, code, quoted material, and attachment contents.
+5. If conversation evidence is inconclusive, use an exposed Codex UI locale; otherwise fall back to English.
+6. Resolve once per managed project. Do not switch because of an occasional message in another language, and do not rename existing tasks automatically.
+7. Persist the resolved language only with the same authorization and scope rules as the naming configuration.
+
+Render `zh` as the common Chinese name, `ja` as the Japanese name, and `en` as the common English romanization. Treat a plain custom-pool string as language-neutral and display it verbatim.
 
 ## Name active workers
 
-Use the project setting, then the global setting, then the current-task choice. The default C14 convention randomly selects an established Japanese actress’s common Chinese name, with no number or feature suffix unless the user explicitly requests one.
+Use the project setting, then the global setting, then the current-task choice. In actress modes, randomly select an available canonical record and render it in the resolved language. In descriptive mode, use a concise title derived from the bounded assignment.
 
 Before every create or rename:
 
 1. Refresh app and local-index titles for the full project namespace.
-2. Treat a non-retired title as reserving a candidate when it equals the name or starts with that name plus a suffix, separator, feature, date, or number.
+2. Treat a non-retired title as reserving a canonical candidate when it equals or starts with any of that candidate’s configured `zh`, `ja`, or `en` aliases plus a suffix, separator, feature, date, or number.
 3. Do not treat a correctly formatted retired title beginning with `退役｜` as reserving the original name.
-4. Filter the configured pool to project-wide available names and randomly select from that set. The bundled default pool is:
-   `小松菜奈`, `新垣结衣`, `石原里美`, `有村架纯`, `滨边美波`, `今田美樱`, `永野芽郁`, `川口春奈`, `上白石萌音`, `清原果耶`, `绫濑遥`, `北川景子`, `户田惠梨香`, `吉冈里帆`, `菜菜绪`, `山本美月`, `本田翼`, `武井咲`, `松冈茉优`, `二阶堂富美`.
-5. Refresh again immediately before mutation and reroll from the remaining available set if the selected name became reserved.
+4. When using the bundled default, read `references/default-name-pool.json` and compare every alias while keeping `id` as the cross-language identity.
+5. Filter the configured canonical records to project-wide available IDs, randomly select one, and render the resolved-language alias.
+6. Refresh again immediately before mutation and reroll from the remaining available IDs if the selected candidate became reserved.
 
 If the pool is exhausted, retire eligible completed tasks and repeat the check, or ask the user to expand/change the pool. Never add numbers merely to bypass a collision.
 

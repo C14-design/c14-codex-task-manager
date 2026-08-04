@@ -11,7 +11,7 @@ It helps Codex:
 - recycle a finite naming pool without losing task history;
 - create and verify a successor before the manager retires itself.
 
-The bundled default naming convention randomly selects Japanese actresses' common Chinese names. On first use, the skill asks whether to use that default, provide a custom pool of favorite actresses or other names, or use ordinary descriptive titles.
+The bundled default naming convention randomly selects Japanese actress names in Chinese, Japanese, or English according to the current Codex conversation language. On first use, the skill asks whether to use that default, provide a custom pool of favorite actresses or other names, or use ordinary descriptive titles.
 
 ## Install
 
@@ -36,6 +36,8 @@ On the first invocation, choose a naming mode and whether to save it globally or
 
 The skill cannot reliably display a prompt immediately after installation; onboarding happens the first time it is invoked.
 
+Language defaults to `auto`. It detects only substantive user-authored chat messages, ignoring webpages, browser context, logs, code, tools, quoted text, and attachments. The resolved language is stable for the managed project unless the user reconfigures it. Canonical IDs make `绫濑遥`, `綾瀬はるか`, and `Haruka Ayase` the same reserved name across languages.
+
 Example request:
 
 ```text
@@ -53,6 +55,7 @@ Some capabilities depend on Codex desktop task-management tools. If those tools 
 ## Repository layout
 
 - `skills/c14-codex-task-manager/` — canonical skill
+- `skills/c14-codex-task-manager/references/default-name-pool.json` — canonical Chinese/Japanese/English default name pool
 
 ## License
 
