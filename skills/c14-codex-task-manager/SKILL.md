@@ -24,6 +24,12 @@ Operate one project-scoped pool of persistent Codex tasks with an explicit lifec
 - Never archive a retired task unless the user explicitly asks. Retirement normally means rename plus unpin.
 - Preserve any explicitly requested model and reasoning profile. If unavailable, use the configured default and report the limitation.
 
+## Default worker pool
+
+- Unless the user specifies otherwise, maintain three active persistent direct-report workers for the managed project.
+- Unless the user specifies otherwise, create or replace workers with model `gpt-5.6-luna` and reasoning effort `xhigh` (Luna Extra High).
+- Treat the three-worker target as a normal operating default, not a reason to create filler work: create workers only when there is a real bounded assignment, and keep the pool below three when no safe, useful assignment exists.
+
 ## Resolve the project namespace
 
 1. Identify the calling task, Codex project, repository root, current checkout, and every Git worktree belonging to that repository.
@@ -68,6 +74,12 @@ Derive expertise from actual work, not the worker’s display name.
 7. Create a fresh worker only when no eligible existing worker is safe or the best worker needs succession.
 
 Send a bounded brief containing the exact objective, non-goals, authoritative handoff, checkout, protected-state constraints, owned files, acceptance criteria, required verification, blockers, and approval boundaries.
+
+Every dispatch must also include the manager thread ID and a completion callback requirement. When the assignment is finished, the worker must use persistent thread messaging to notify the manager once with its final result, changed files, verification evidence, unresolved gaps, and blockers. Do not rely on the manager polling for completion.
+
+After a dispatch succeeds, the manager returns to idle. Do not call `wait_threads`, repeatedly read the worker, or otherwise monitor intermediate progress unless the user explicitly asks for monitoring or the worker reports that it needs attention, approval, or clarification.
+
+When the worker's completion notification arrives, the manager owns final acceptance. Review the result against the original scope and non-goals, inspect relevant outputs or diffs, verify the claimed checks in proportion to risk, and either accept the work or send one bounded correction brief. Do not report the assignment complete to the user before this acceptance succeeds.
 
 Pin the manager and actively assigned workers. Unpin retired tasks. Avoid changing unrelated projects’ pins.
 
@@ -133,8 +145,8 @@ Do not retire a task merely because it is temporarily idle.
 2. Keep only the active goal, exact next action, decisions, constraints, dirty files, runtime ownership, blockers, and verification gaps.
 3. Create the task in the current project and authoritative checkout. Do not fork conversation history unless explicitly requested.
 4. Give it the bounded brief and point it to the current-state handoff.
-5. Rename it with a freshly verified name, pin it, and wait once for a compact progress snapshot.
-6. Claim readiness only after creation, rename, pin, and initial handoff acceptance succeed.
+5. Rename it with a freshly verified name, pin it, and dispatch the bounded brief with the manager thread ID and completion callback requirement.
+6. After dispatch succeeds, return to idle without waiting for a progress snapshot. Claim only that assignment succeeded; claim task completion only after the worker notifies the manager and final acceptance passes.
 
 ## Replace the manager itself
 
@@ -158,7 +170,7 @@ For an audit, return:
 - `Active manager:` task title
 - `Assignment:` worker → bounded objective
 - `Lifecycle changes:` created, renamed, pinned, unpinned, or none
-- `Next checkpoint:` one concrete event
+- `Next checkpoint:` normally the worker's completion notification, or one other concrete event
 
 For read-only context assessment, also state `Handoff needed: No | After current step | Now`.
 
