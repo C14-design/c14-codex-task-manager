@@ -30,6 +30,13 @@ Operate one project-scoped pool of persistent Codex tasks with an explicit lifec
 - Unless the user specifies otherwise, create or replace workers with model `gpt-5.6-luna` and reasoning effort `xhigh` (Luna Extra High).
 - Treat the three-worker target as a normal operating default, not a reason to create filler work: create workers only when there is a real bounded assignment, and keep the pool below three when no safe, useful assignment exists.
 
+## Preserve the manager-worker boundary
+
+- Treat the manager as the project brain. The manager must personally inspect ambiguous requests, diagnose root causes, resolve responsive, ownership, safety, and product boundaries, choose the solution, and define the exact implementation contract before dispatch.
+- Do not delegate open-ended prompts such as “diagnose”, “investigate and fix”, “find the root cause”, or “decide the right behavior” to a worker. When the user asks to discuss, inspect, explain, or diagnose, keep that work in the manager task.
+- Dispatch a worker only after the manager can state the confirmed cause, exact change, owned files, non-goals, acceptance criteria, and approval boundary. Workers implement and verify that decided contract; they do not become substitute managers.
+- A worker may collect narrowly specified read-only measurements only when the manager has already defined the exact evidence question. If evidence contradicts the contract or requires new product judgment, the worker must stop and report the boundary instead of redefining the diagnosis or expanding scope.
+
 ## Resolve the project namespace
 
 1. Identify the calling task, Codex project, repository root, current checkout, and every Git worktree belonging to that repository.
@@ -87,7 +94,7 @@ Keep the managed project's active pin block stable across every worker or manage
 2. Prefer a worker that already completed closely related work in the same module.
 3. Prefer the authoritative checkout required by the task.
 4. Prefer Green over Amber context, then an idle or less recently loaded worker.
-5. Keep one writer per overlapping file set. Use another worker only for read-only acceptance or independent diagnosis.
+5. Keep one writer per overlapping file set. Keep diagnosis and solution selection with the manager; use another worker only for narrowly specified read-only evidence collection or acceptance after the manager defines the question.
 6. Do not manufacture filler work merely to balance the pool.
 7. Create a fresh worker only when no eligible existing worker is safe or the best worker needs succession.
 

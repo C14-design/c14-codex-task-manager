@@ -1,4 +1,4 @@
 interface:
   display_name: "C14 Codex Task Manager"
   short_description: "Manage Codex task staffing, context, and succession"
-  default_prompt: "Use $c14-codex-task-manager to assess context, assign work, retire stale tasks, and create a safe successor when needed."
+  default_prompt: "Use $c14-codex-task-manager to keep diagnosis and solution decisions with the manager, dispatch decided implementation contracts to Luna workers, and manage task lifecycle safely."

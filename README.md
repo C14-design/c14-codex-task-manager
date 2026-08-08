@@ -29,11 +29,14 @@ Manager task
 
 The manager is the durable control plane. It retains the program goal, task roster, file ownership, protected state, runtime ownership, acceptance history, and the next checkpoint.
 
+It is also the project brain. Ambiguous behavior, root-cause analysis, responsive and ownership boundaries, safety decisions, and solution selection stay with the manager. Workers begin only after that reasoning has been converted into an exact execution contract.
+
 The default pool contains three persistent workers using `gpt-5.6-luna` with `xhigh` reasoning. Workers are not disposable one-shot agents: the manager reuses them for closely related modules when their checkout and context remain reliable.
 
 ### Manager responsibilities
 
 - understand the user's current request and define a bounded objective;
+- personally inspect ambiguous behavior, diagnose the root cause, resolve boundaries, and choose the solution before dispatch;
 - choose the worker with the closest proven experience;
 - maintain one writer per overlapping file set;
 - include the authoritative checkout, constraints, non-goals, and verification in every dispatch;
@@ -45,6 +48,7 @@ The default pool contains three persistent workers using `gpt-5.6-luna` with `xh
 ### Worker responsibilities
 
 - treat the manager's dispatch brief as the primary context;
+- execute the decided contract instead of taking over open-ended diagnosis or product decisions;
 - work only in the assigned checkout and owned files;
 - preserve protected and unrelated state;
 - implement and verify the bounded assignment;
@@ -58,7 +62,9 @@ This separation lets workers stay focused while the manager preserves cross-assi
 ```text
 user request
     ↓
-manager resolves scope, ownership, and safety
+manager diagnoses the cause, resolves boundaries, and chooses the solution
+    ↓
+manager converts the decision into an exact execution contract
     ↓
 best-matched worker receives a bounded brief
     ↓
@@ -72,6 +78,8 @@ manager records the next checkpoint and returns to idle
 ```
 
 The manager does not poll idle workers. A successful dispatch is not reported as completed work; completion exists only after the callback and final acceptance pass.
+
+Requests such as “diagnose”, “investigate and fix”, or “decide the right behavior” are not worker briefs. The manager handles that reasoning directly. A worker may collect a narrowly specified measurement when asked, but if implementation evidence contradicts the contract or exposes a new product decision, it stops and returns the boundary to the manager.
 
 ## Context lifecycle
 
