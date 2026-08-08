@@ -41,11 +41,20 @@ Operate one project-scoped pool of persistent Codex tasks with an explicit lifec
 
 Judge context economics from observable signals; never invent a percentage or token remainder.
 
-- **Green** — one coherent goal, reliable current state, bounded continuation.
-- **Amber** — finish the current atomic step, then hand off before another substantial feature.
+- **Green** — one coherent program-level goal, reliable current state, and a bounded next action.
+- **Amber** — finish the current atomic step, then hand off before another assignment or substantial scope increase.
 - **Red** — stop adding scope and create a successor before more implementation.
 
-Pressure signals include compaction replacing exact details, three or more completed feature clusters, a major topic switch, repeated source-state reconstruction, contradictory stale history, or repeated misunderstandings caused by old context.
+Do not mark context Amber or Red merely because a task is old, has many turns, completed several feature clusters, or experienced one compaction. During component-polish phases, treat a sequence of related small assignments as one valid program-level manager goal.
+
+Evaluate workers and the manager asymmetrically:
+
+- **Workers** — treat the bounded dispatch brief as the primary context. Reuse a worker for closely related tasks in the same module when ownership is safe. After the first observed compaction, refresh the bounded state and continue. After a second observed compaction, finish the current atomic assignment, mark the worker Amber, and replace it before another assignment. Mark it Red sooner if compaction or reconstruction makes checkout, ownership, constraints, or verification unreliable.
+- **Manager** — retain cross-assignment decisions, roster, ownership, protected state, preview state, and acceptance history for longer. Measure useful work between compactions by completed `dispatch → callback → final acceptance` loops. Repeated compaction alone is not Red while the manager can cheaply recover authoritative state and complete useful loops.
+
+Mark a manager Amber when repeated compaction happens before a full useful loop completes, or when ordinary turns repeatedly require broad source-state reconstruction. Mark it Red only after one focused read-only recovery pass still cannot reliably state the active program goal, authoritative checkout/source, file ownership, worker callback state, protected/runtime state, and next acceptance checkpoint; also mark it Red when two consecutive compaction intervals complete no full useful loop and recovery cost is overtaking useful coordination.
+
+Treat a genuinely independent new topic as a separate-task boundary, not evidence that the existing related-work history was intrinsically unhealthy. Contradictory stale history, repeated misunderstandings, or an actual wrong-checkout, wrong-owner, or unsafe-write incident remain immediate pressure signals.
 
 Finish an in-progress atomic or safety-critical action before succession unless context loss already threatens correctness.
 
@@ -62,6 +71,15 @@ Record only what affects assignment:
 - current file ownership, blocker, and pending verification.
 
 Derive expertise from actual work, not the worker’s display name.
+
+## Preserve pinned order
+
+Keep the managed project's active pin block stable across every worker or manager succession:
+
+1. Before creating, retiring, or replacing a task, refresh `pinnedThreads` and record the active manager and workers with their `pinnedIndex` values.
+2. Define the desired order as the active manager first, followed by active Luna workers in their prior relative order. Put a successor in the exact slot of the task it replaces; append a genuinely additional worker after the existing workers.
+3. After lifecycle mutations finish, normalize only this project's active pool. When the app exposes only boolean pin/unpin controls, unpin those active managed tasks and repin them sequentially as manager, then workers in the desired order. Never alter unrelated projects' pins merely to obtain an absolute global index.
+4. Refresh `pinnedThreads` once and verify the manager has the first `pinnedIndex` within the managed pool and every worker retained its intended relative position. Do not claim succession complete until this verification passes. If ordering cannot be guaranteed, keep every active pool member pinned and report the ordering gap.
 
 ## Assign work
 
@@ -146,7 +164,8 @@ Do not retire a task merely because it is temporarily idle.
 3. Create the task in the current project and authoritative checkout. Do not fork conversation history unless explicitly requested.
 4. Give it the bounded brief and point it to the current-state handoff.
 5. Rename it with a freshly verified name, pin it, and dispatch the bounded brief with the manager thread ID and completion callback requirement.
-6. After dispatch succeeds, return to idle without waiting for a progress snapshot. Claim only that assignment succeeded; claim task completion only after the worker notifies the manager and final acceptance passes.
+6. When browser QA is part of the assignment, record the exact relevant preview URL, including its path and query, and call `open_in_codex` with `target: { type: "browser", url: preview_url }` and the target `threadId`. Do not restart or mutate the preview merely to deliver the URL. If the target is hidden and delivery is queued, report it as queued rather than visually loaded.
+7. After dispatch succeeds, return to idle without waiting for a progress snapshot. Claim only that assignment succeeded; claim task completion only after the worker notifies the manager and final acceptance passes.
 
 ## Replace the manager itself
 
@@ -156,11 +175,12 @@ The manager handoff must also include:
 
 - live worker roster and task IDs;
 - ownership, status, last useful cursor, and blocker for each worker;
-- pin state and retirement eligibility;
+- pin state, current `pinnedIndex`, desired successor slot, and retirement eligibility;
 - exact next dispatch or follow-up;
 - project safety rules and pending approvals.
+- the exact current preview URL, including path and query, when a relevant local preview exists.
 
-Create and pin the successor before retiring the old manager. Wait once for acknowledgement. Then rename the old manager using its career summary and unpin it. If creation or acknowledgement fails, keep the old manager pinned and report the gap.
+Create and pin the successor before retiring the old manager. Wait once for acknowledgement. After acknowledgement, call `open_in_codex` with `target: { type: "browser", url: preview_url }` and the successor `threadId`; this must reuse the existing preview and must not restart it. If the successor is hidden, queue the tab for its next display. Then rename the old manager using its career summary and unpin it. If creation, acknowledgement, or preview-URL delivery fails, keep the old manager pinned and report the gap. Opening a URL does not authorize preview mutation; before any restart or stop, verify PID, process group, command, cwd, and port ownership.
 
 ## Report compactly
 
