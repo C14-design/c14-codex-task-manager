@@ -22,13 +22,14 @@ Operate one project-scoped pool of persistent Codex tasks with an explicit lifec
 - Treat active management as authorization for safe Red-status manager succession unless the user says review-only or forbids creating a task.
 - Use persistent thread tools for named or pinned workers. Do not silently replace them with ephemeral subagents.
 - Never archive a retired task unless the user explicitly asks. Retirement normally means rename plus unpin.
-- Preserve any explicitly requested model and reasoning profile. If unavailable, use the configured default and report the limitation.
+- Preserve any explicitly requested worker model and reasoning profile. Manager creation is stricter: every new manager must use model `gpt-5.6-sol` with reasoning effort `high`. If that exact manager profile is unavailable, stop and report the blocker; never substitute another model or reasoning effort.
 
 ## Default worker pool
 
 - Unless the user specifies otherwise, maintain three active persistent direct-report workers for the managed project.
 - Unless the user specifies otherwise, create or replace workers with model `gpt-5.6-luna` and reasoning effort `xhigh` (Luna Extra High).
 - Treat the three-worker target as a normal operating default, not a reason to create filler work: create workers only when there is a real bounded assignment, and keep the pool below three when no safe, useful assignment exists.
+- Create every new manager or manager successor with model `gpt-5.6-sol` and reasoning effort `high`. This manager profile is mandatory and does not inherit the current task's model.
 
 ## Preserve the manager-worker boundary
 
@@ -137,9 +138,13 @@ Store only `{"naming_mode":"default_actresses|custom_pool|descriptive","name_lan
 
 Render `zh` as the common Chinese name, `ja` as the Japanese name, and `en` as the common English romanization. Treat a plain custom-pool string as language-neutral and display it verbatim.
 
-## Name active workers
+## Name active tasks
 
 Use the project setting, then the global setting, then the current-task choice. In actress modes, randomly select an available canonical record and render it in the resolved language. In descriptive mode, use a concise title derived from the bounded assignment.
+
+- Name a worker with the resolved name alone unless the user requests a bounded descriptive suffix.
+- Name every manager exactly `<resolved name>manager`, with the lowercase ASCII suffix `manager` appended directly after the name and no separator; for example, `广濑丝丝manager`. In descriptive mode, append the same suffix to the concise manager name.
+- Treat a manager title without the `manager` suffix as incomplete succession and correct it before retiring the previous manager.
 
 Before every create or rename:
 
@@ -170,7 +175,7 @@ Do not retire a task merely because it is temporarily idle.
 2. Keep only the active goal, exact next action, decisions, constraints, dirty files, runtime ownership, blockers, and verification gaps.
 3. Create the task in the current project and authoritative checkout. Do not fork conversation history unless explicitly requested.
 4. Give it the bounded brief and point it to the current-state handoff.
-5. Rename it with a freshly verified name, pin it, and dispatch the bounded brief with the manager thread ID and completion callback requirement.
+5. Rename it with a freshly verified role-aware name: workers use the resolved worker name; manager successors use exact `<resolved name>manager`. Pin it and dispatch the bounded brief with the manager thread ID and completion callback requirement.
 6. When browser QA is part of the assignment, record the exact relevant preview URL, including its path and query, and call `open_in_codex` with `target: { type: "browser", url: preview_url }` and the target `threadId`. Do not restart or mutate the preview merely to deliver the URL. If the target is hidden and delivery is queued, report it as queued rather than visually loaded.
 7. After dispatch succeeds, return to idle without waiting for a progress snapshot. Claim only that assignment succeeded; claim task completion only after the worker notifies the manager and final acceptance passes.
 
@@ -187,7 +192,7 @@ The manager handoff must also include:
 - project safety rules and pending approvals.
 - the exact current preview URL, including path and query, when a relevant local preview exists.
 
-Create and pin the successor before retiring the old manager. Wait once for acknowledgement. After acknowledgement, call `open_in_codex` with `target: { type: "browser", url: preview_url }` and the successor `threadId`; this must reuse the existing preview and must not restart it. If the successor is hidden, queue the tab for its next display. Then rename the old manager using its career summary and unpin it. If creation, acknowledgement, or preview-URL delivery fails, keep the old manager pinned and report the gap. Opening a URL does not authorize preview mutation; before any restart or stop, verify PID, process group, command, cwd, and port ownership.
+Create the successor with model `gpt-5.6-sol`, reasoning effort `high`, and no forked conversation history. Rename it exactly `<resolved name>manager`, verify both its model profile and title, and pin it before retiring the old manager. Wait once for acknowledgement. After acknowledgement, call `open_in_codex` with `target: { type: "browser", url: preview_url }` and the successor `threadId`; this must reuse the existing preview and must not restart it. If the successor is hidden, queue the tab for its next display. Then rename the old manager using its career summary and unpin it. If exact-profile creation, exact naming, acknowledgement, or preview-URL delivery fails, keep the old manager pinned and report the gap. Opening a URL does not authorize preview mutation; before any restart or stop, verify PID, process group, command, cwd, and port ownership.
 
 ## Report compactly
 
