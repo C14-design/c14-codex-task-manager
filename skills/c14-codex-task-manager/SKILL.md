@@ -1,209 +1,76 @@
 ---
 name: c14-codex-task-manager
-description: >-
-  Manage a persistent Codex task pool end to end: assess context health, inventory
-  and pin tasks, assign work to the best-matched existing worker, create named
-  workers or successors, retire and rename completed tasks by their main
-  contribution, and replace the manager itself when its context becomes stale.
-  Use when the user invokes $c14-codex-task-manager, asks Codex to distribute or
-  manage tasks/chats/threads, asks who should take work, asks to balance pinned
-  workers, asks for context check plus succession, asks to create or rename a
-  task, or asks to retire, pin, unpin, replace, or continue a task safely.
+description: Coordinate existing persistent Codex tasks, diagnose work before dispatch, preserve file ownership, accept results, and prepare authorized succession. Use for task-pool review, delegation, or end-to-end delivery; distinguish those requests before acting.
 ---
 
 # C14 Codex Task Manager
 
-Operate one project-scoped pool of persistent Codex tasks with an explicit lifecycle. Treat “task”, “thread”, and “chat” as the same persistent object.
+## Choose the completion contract
 
-## Respect authority
+- **Review:** inventory, context assessment or recommendations only. End with findings; do not message, rename, pin, create or retire tasks.
+- **Dispatch:** the user asks to give a brief to a named task or distribute decided work. End after confirmed delivery with the recipient and acceptance owner; do not call that implementation complete.
+- **Deliver:** the user asks the manager to organize and finish work. Continue independent work, receive callbacks or use bounded `wait_threads` calls with cursors, review results and resolve bounded corrections until acceptance or a concrete blocker. Do not end merely because dispatch succeeded.
 
-- Treat review, inventory, explanation, and context assessment as read-only.
-- Mutate tasks only when the user requests task management or invokes this skill for active management.
-- Treat active management as authorization for safe Red-status manager succession unless the user says review-only or forbids creating a task.
-- Use persistent thread tools for named or pinned workers. Do not silently replace them with ephemeral subagents.
-- Never archive a retired task unless the user explicitly asks. Retirement normally means rename plus unpin.
-- Preserve any explicitly requested worker model and reasoning profile. Manager creation is stricter: every new manager must use model `gpt-5.6-sol` with reasoning effort `high`. If that exact manager profile is unavailable, stop and report the blocker; never substitute another model or reasoning effort.
+Infer the mode from the requested outcome and existing authorization. A status question or additive correction does not cancel an active delivery objective. Report a genuine scope ambiguity while continuing independent work.
 
-## Default worker pool
+## Authority and task identity
 
-- Unless the user specifies otherwise, maintain three active persistent direct-report workers for the managed project.
-- Unless the user specifies otherwise, create or replace workers with model `gpt-5.6-luna` and reasoning effort `xhigh` (Luna Extra High).
-- Treat the three-worker target as a normal operating default, not a reason to create filler work: create workers only when there is a real bounded assignment, and keep the pool below three when no safe, useful assignment exists.
-- Create every new manager or manager successor with model `gpt-5.6-sol` and reasoning effort `high`. This manager profile is mandatory and does not inherit the current task's model.
+Use persistent app task tools for named/pinned tasks. Collaboration agents are not substitutes or evidence of persistent identity. Do not turn this skill into authorization to create tasks: create a worker or successor only when the user explicitly requested creation/replacement, including an applicable earlier request, and the current tool permits it. Preparing a handoff does not require creating its recipient.
 
-## Preserve the manager-worker boundary
+Task management does not authorize commits, pushes, deployments, merchant-data changes or preview reconciliation. Preserve unrelated dirty files. Never archive/delete a retired task without explicit authority. Do not write persistent memory unless requested.
 
-- Treat the manager as the project brain. The manager must personally inspect ambiguous requests, diagnose root causes, resolve responsive, ownership, safety, and product boundaries, choose the solution, and define the exact implementation contract before dispatch.
-- Do not delegate open-ended prompts such as “diagnose”, “investigate and fix”, “find the root cause”, or “decide the right behavior” to a worker. When the user asks to discuss, inspect, explain, or diagnose, keep that work in the manager task.
-- Dispatch a worker only after the manager can state the confirmed cause, exact change, owned files, non-goals, acceptance criteria, and approval boundary. Workers implement and verify that decided contract; they do not become substitute managers.
-- A worker may collect narrowly specified read-only measurements only when the manager has already defined the exact evidence question. If evidence contradicts the contract or requires new product judgment, the worker must stop and report the boundary instead of redefining the diagnosis or expanding scope.
+Resolve the calling project/root, relevant tasks and write-compatible checkout through current app metadata. Recheck the selected recipient's persistent ID, status and ownership before dispatch. Main checkout and worktrees share a naming namespace, but are not interchangeable write targets.
 
-## Resolve the project namespace
+Use the current API first. Expand to older task pages or a read-only local index only to resolve a concrete collision, missing recipient or ambiguous ownership; avoid full-history scans for ordinary dispatch. If tools cannot prove ownership, do not dispatch writes. Missing optional metadata is unknown, not an invented value.
 
-1. Identify the calling task, Codex project, repository root, current checkout, and every Git worktree belonging to that repository.
-2. List project tasks at the maximum supported limit. When the list may omit older tasks, supplement it with the local Codex thread index in read-only mode.
-3. Treat the main checkout and its worktrees as one naming namespace, but evaluate checkout compatibility separately for write assignments.
-4. Fail closed on naming or ownership when available sources cannot establish project-wide truth.
+## Role preferences — single source
 
-## Audit context health
+An explicit user target, model or naming choice takes precedence. Otherwise preserve existing task settings. Preferred profiles for user-authorized new tasks are:
 
-Judge context economics from observable signals; never invent a percentage or token remainder.
+| Role | Model | Reasoning | Name |
+| --- | --- | --- | --- |
+| Manager | gpt-5.6-sol | medium | 王熙凤manager |
+| Worker | gpt-5.6-luna | xhigh | configured available worker name |
 
-- **Green** — one coherent program-level goal, reliable current state, and a bounded next action.
-- **Amber** — finish the current atomic step, then hand off before another assignment or substantial scope increase.
-- **Red** — stop adding scope and create a successor before more implementation.
+Pass model overrides only when the user has explicitly requested that model, as required by the task tool; otherwise omit them and use its configured default. Do not silently change an existing task's model to fit this table. If the user requires an exact profile and the tool cannot establish/support it, report that specific limitation. Lack of model metadata alone does not disqualify a user-named recipient whose project and ownership are established.
 
-Do not mark context Amber or Red merely because a task is old, has many turns, completed several feature clusters, or experienced one compaction. During component-polish phases, treat a sequence of related small assignments as one valid program-level manager goal.
+Prefer eligible existing pinned workers; no quota, filler work or automatic replacements. For naming configuration and authorized lifecycle operations, read [lifecycle.md](references/lifecycle.md).
 
-Evaluate workers and the manager asymmetrically:
+## Diagnose and dispatch
 
-- **Workers** — treat the bounded dispatch brief as the primary context. Reuse a worker for closely related tasks in the same module when ownership is safe. After the first observed compaction, refresh the bounded state and continue. After a second observed compaction, finish the current atomic assignment, mark the worker Amber, and replace it before another assignment. Mark it Red sooner if compaction or reconstruction makes checkout, ownership, constraints, or verification unreliable.
-- **Manager** — retain cross-assignment decisions, roster, ownership, protected state, preview state, and acceptance history for longer. Measure useful work between compactions by completed `dispatch → callback → final acceptance` loops. Repeated compaction alone is not Red while the manager can cheaply recover authoritative state and complete useful loops.
+The manager owns root-cause diagnosis, product decisions, responsive contracts and final acceptance. Workers receive decided implementation contracts or narrowly defined read-only evidence questions, not open-ended substitute-manager assignments. If evidence contradicts a brief, the worker reports it rather than broadening scope.
 
-Mark a manager Amber when repeated compaction happens before a full useful loop completes, or when ordinary turns repeatedly require broad source-state reconstruction. Mark it Red only after one focused read-only recovery pass still cannot reliably state the active program goal, authoritative checkout/source, file ownership, worker callback state, protected/runtime state, and next acceptance checkpoint; also mark it Red when two consecutive compaction intervals complete no full useful loop and recovery cost is overtaking useful coordination.
+Keep one writer per overlapping file set. Prefer proven module experience, compatible checkout and reliable context, then availability. Do not disturb a worker's atomic operation or active preview ownership.
 
-Treat a genuinely independent new topic as a separate-task boundary, not evidence that the existing related-work history was intrinsically unhealthy. Contradictory stale history, repeated misunderstandings, or an actual wrong-checkout, wrong-owner, or unsafe-write incident remain immediate pressure signals.
+Every brief includes:
 
-Finish an in-progress atomic or safety-critical action before succession unless context loss already threatens correctness.
+- concrete objective, confirmed cause or exact evidence question;
+- checkout, owned files, non-goals and protected state;
+- expected behavior, meaningful verification and acceptance criteria;
+- missing inputs and applicable authorization boundaries;
+- manager task ID and one completion callback with changed files, evidence and gaps.
 
-## Build the worker roster
+After dispatch, follow the chosen completion contract. In Deliver mode, use callbacks plus bounded waits (up to 60 seconds per call), carry cursors forward, avoid repeated unchanged reads, and keep user updates meaningful. In Dispatch mode, report delivery and leave implementation acceptance with the designated manager.
 
-Record only what affects assignment:
+Inspect the focused diff and evidence before accepting. A worker pass is not manager acceptance. Reuse passing checks only when the relevant source, test configuration and fixtures remain unchanged. Assign expensive checks one owner; broaden testing for changed risk, actual failure or a release boundary, not for every CSS iteration.
 
-- active title and naming identity;
-- active, idle, waiting, blocked, completed, or retired status;
-- pinned state;
-- repository checkout/worktree and write suitability;
-- context health;
-- strongest completed modules;
-- current file ownership, blocker, and pending verification.
+## Recover context before considering succession
 
-Derive expertise from actual work, not the worker’s display name.
+- **Green:** goal, source state, ownership and next acceptance checkpoint are reliable.
+- **Amber:** a specific item needs a focused read-only recovery before more affected work.
+- **Red:** that recovery cannot establish a safe goal, checkout, ownership, pending callbacks or verification state. Pause dependent mutations and prepare a concise handoff.
 
-## Preserve pinned order
+Observable compaction counts are diagnostic hints, never automatic retirement triggers. Do not invent a count or context percentage. A third compaction prompts a reliability check, not a forced new task; a new message does not erase unresolved recovery gaps. Keep related work together while its state remains trustworthy.
 
-Keep the managed project's active pin block stable across every worker or manager succession:
+Prepare the active goal, decisions, exact next action, live roster/IDs, ownership, dirty state, runtime ownership, callbacks, blockers and verification gaps. Remove obsolete claims from an authorized handoff document, but do not rewrite unrelated memory or historical records. Create a successor only under the authority above.
 
-1. Before creating, retiring, or replacing a task, refresh `pinnedThreads` and record the active manager and workers with their `pinnedIndex` values.
-2. Define the desired order as the active manager first, followed by active Luna workers in their prior relative order. Put a successor in the exact slot of the task it replaces; append a genuinely additional worker after the existing workers.
-3. After lifecycle mutations finish, normalize only this project's active pool. When the app exposes only boolean pin/unpin controls, unpin those active managed tasks and repin them sequentially as manager, then workers in the desired order. Never alter unrelated projects' pins merely to obtain an absolute global index.
-4. Refresh `pinnedThreads` once and verify the manager has the first `pinnedIndex` within the managed pool and every worker retained its intended relative position. Do not claim succession complete until this verification passes. If ordering cannot be guaranteed, keep every active pool member pinned and report the ordering gap.
+## Report the actual outcome
 
-## Assign work
+State mode, completed action, acceptance status and the next checkpoint. Separate:
 
-1. Exclude retired, wrong-checkout, blocked, Red-context, and file-conflicting tasks.
-2. Prefer a worker that already completed closely related work in the same module.
-3. Prefer the authoritative checkout required by the task.
-4. Prefer Green over Amber context, then an idle or less recently loaded worker.
-5. Keep one writer per overlapping file set. Keep diagnosis and solution selection with the manager; use another worker only for narrowly specified read-only evidence collection or acceptance after the manager defines the question.
-6. Do not manufacture filler work merely to balance the pool.
-7. Create a fresh worker only when no eligible existing worker is safe or the best worker needs succession.
+- work delivered versus implementation accepted;
+- operational ownership transferred versus naming/pin/browser presentation completed;
+- measured context uncertainty versus historical task age;
+- queued browser delivery versus a visibly opened page.
 
-Send a bounded brief containing the exact objective, non-goals, authoritative handoff, checkout, protected-state constraints, owned files, acceptance criteria, required verification, blockers, and approval boundaries.
-
-Every dispatch must also include the manager thread ID and a completion callback requirement. When the assignment is finished, the worker must use persistent thread messaging to notify the manager once with its final result, changed files, verification evidence, unresolved gaps, and blockers. Do not rely on the manager polling for completion.
-
-After a dispatch succeeds, the manager returns to idle. Do not call `wait_threads`, repeatedly read the worker, or otherwise monitor intermediate progress unless the user explicitly asks for monitoring or the worker reports that it needs attention, approval, or clarification.
-
-When the worker's completion notification arrives, the manager owns final acceptance. Review the result against the original scope and non-goals, inspect relevant outputs or diffs, verify the claimed checks in proportion to risk, and either accept the work or send one bounded correction brief. Do not report the assignment complete to the user before this acceptance succeeds.
-
-Pin the manager and actively assigned workers. Unpin retired tasks. Avoid changing unrelated projects’ pins.
-
-## Configure naming on first use
-
-There is no reliable post-install hook, so perform naming onboarding on the first invocation of this skill.
-
-1. Look for a project override at `<project-root>/.codex/c14-codex-task-manager.json`, then a global preference at `${CODEX_HOME:-~/.codex}/c14-codex-task-manager.json`.
-2. If neither exists and the user has not already stated a convention, ask them to choose:
-   - the default Japanese-actress pool with random selection (recommended);
-   - a custom pool of their favorite actresses or other names;
-   - ordinary descriptive task titles.
-3. Default `name_language` to `auto`; allow an explicit `zh`, `ja`, or `en` override.
-4. For a custom pool, accept plain display strings or localized records with a stable `id` and `zh`, `ja`, and `en` aliases. Trim whitespace, remove duplicate IDs and aliases, preserve the user’s display spelling, and require at least one usable entry.
-5. Ask whether to save the choice globally or only for the current project. Explain the exact target path and write it only after the user chooses. A project setting overrides a global setting.
-6. If the user declines persistence, keep the choice for the current task only and explain that a future fresh task may ask again.
-7. Do not create or rename a worker until first-use naming is resolved. Allow the user to reconfigure it later on request.
-
-Store only `{"naming_mode":"default_actresses|custom_pool|descriptive","name_language":"auto|zh|ja|en","resolved_name_language":"zh|ja|en","name_pool":[]}`. Omit `resolved_name_language` until `auto` is resolved, and populate `name_pool` only for `custom_pool`. Do not place transcripts, project secrets, repository state, or personal account data in this configuration.
-
-## Resolve the display language
-
-1. Use an explicit `zh`, `ja`, or `en` configuration first.
-2. For `auto`, reuse the project’s existing `resolved_name_language` when present.
-3. Otherwise, detect the dominant language of recent substantive user-authored chat messages.
-4. Ignore system/developer text, ambient browser context, webpages, tool output, logs, code, quoted material, and attachment contents.
-5. If conversation evidence is inconclusive, use an exposed Codex UI locale; otherwise fall back to English.
-6. Resolve once per managed project. Do not switch because of an occasional message in another language, and do not rename existing tasks automatically.
-7. Persist the resolved language only with the same authorization and scope rules as the naming configuration.
-
-Render `zh` as the common Chinese name, `ja` as the Japanese name, and `en` as the common English romanization. Treat a plain custom-pool string as language-neutral and display it verbatim.
-
-## Name active tasks
-
-Use the project setting, then the global setting, then the current-task choice. In actress modes, randomly select an available canonical record and render it in the resolved language. In descriptive mode, use a concise title derived from the bounded assignment.
-
-- Name a worker with the resolved name alone unless the user requests a bounded descriptive suffix.
-- Name every manager exactly `<resolved name>manager`, with the lowercase ASCII suffix `manager` appended directly after the name and no separator; for example, `广濑丝丝manager`. In descriptive mode, append the same suffix to the concise manager name.
-- Treat a manager title without the `manager` suffix as incomplete succession and correct it before retiring the previous manager.
-
-Before every create or rename:
-
-1. Refresh app and local-index titles for the full project namespace.
-2. Treat a non-retired title as reserving a canonical candidate when it equals or starts with any of that candidate’s configured `zh`, `ja`, or `en` aliases plus a suffix, separator, feature, date, or number.
-3. Do not treat a correctly formatted retired title beginning with `退役｜` as reserving the original name.
-4. When using the bundled default, read `references/default-name-pool.json` and compare every alias while keeping `id` as the cross-language identity.
-5. Filter the configured canonical records to project-wide available IDs, randomly select one, and render the resolved-language alias.
-6. Refresh again immediately before mutation and reroll from the remaining available IDs if the selected candidate became reserved.
-
-If the pool is exhausted, retire eligible completed tasks and repeat the check, or ask the user to expand/change the pool. Never add numbers merely to bypass a collision.
-
-## Retire and recycle a name
-
-Retire only after work is complete, superseded, safely handed off, or proven unsuitable for the authoritative checkout.
-
-1. Read the latest state and identify the task’s career-defining module and contribution.
-2. Write a short factual summary rather than a chronology.
-3. Rename it as `退役｜<主模块>·<主要贡献>｜原<名字>`; for example, `退役｜Header·玻璃菜单｜原上白石萌音`.
-4. Unpin it. Do not archive or delete it without explicit authorization.
-5. Return the original name to the pool only after the rename succeeds.
-
-Do not retire a task merely because it is temporarily idle.
-
-## Create a worker or successor
-
-1. Clean the project’s current handoff in place when one exists. Verify it against current source and external state; remove solved, stale, superseded, and unrelated history.
-2. Keep only the active goal, exact next action, decisions, constraints, dirty files, runtime ownership, blockers, and verification gaps.
-3. Create the task in the current project and authoritative checkout. Do not fork conversation history unless explicitly requested.
-4. Give it the bounded brief and point it to the current-state handoff.
-5. Rename it with a freshly verified role-aware name: workers use the resolved worker name; manager successors use exact `<resolved name>manager`. Pin it and dispatch the bounded brief with the manager thread ID and completion callback requirement.
-6. When browser QA is part of the assignment, record the exact relevant preview URL, including its path and query, and call `open_in_codex` with `target: { type: "browser", url: preview_url }` and the target `threadId`. Do not restart or mutate the preview merely to deliver the URL. If the target is hidden and delivery is queued, report it as queued rather than visually loaded.
-7. After dispatch succeeds, return to idle without waiting for a progress snapshot. Claim only that assignment succeeded; claim task completion only after the worker notifies the manager and final acceptance passes.
-
-## Replace the manager itself
-
-When the manager is Amber, finish the atomic step and prepare succession before new scope. When Red, create a fresh manager under active-management authorization.
-
-The manager handoff must also include:
-
-- live worker roster and task IDs;
-- ownership, status, last useful cursor, and blocker for each worker;
-- pin state, current `pinnedIndex`, desired successor slot, and retirement eligibility;
-- exact next dispatch or follow-up;
-- project safety rules and pending approvals.
-- the exact current preview URL, including path and query, when a relevant local preview exists.
-
-Create the successor with model `gpt-5.6-sol`, reasoning effort `high`, and no forked conversation history. Rename it exactly `<resolved name>manager`, verify both its model profile and title, and pin it before retiring the old manager. Wait once for acknowledgement. After acknowledgement, call `open_in_codex` with `target: { type: "browser", url: preview_url }` and the successor `threadId`; this must reuse the existing preview and must not restart it. If the successor is hidden, queue the tab for its next display. Then rename the old manager using its career summary and unpin it. If exact-profile creation, exact naming, acknowledgement, or preview-URL delivery fails, keep the old manager pinned and report the gap. Opening a URL does not authorize preview mutation; before any restart or stop, verify PID, process group, command, cwd, and port ownership.
-
-## Report compactly
-
-For an audit, return:
-
-- `Context status: Green | Amber | Red`
-- `Active manager:` task title
-- `Assignment:` worker → bounded objective
-- `Lifecycle changes:` created, renamed, pinned, unpinned, or none
-- `Next checkpoint:` normally the worker's completion notification, or one other concrete event
-
-For read-only context assessment, also state `Handoff needed: No | After current step | Now`.
-
-Do not dump transcripts, chronological logs, or speculative context percentages. Do not write persistent memory unless the user explicitly asks.
+Do not let a cosmetic pin-order or browser-tab failure invalidate a verified operational handoff. Keep a functioning owner available until acceptance and ownership transfer are acknowledged.
