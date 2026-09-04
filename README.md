@@ -25,7 +25,7 @@ titles. No fixed worker quota is required.
 ## Install
 
 ```sh
-git clone https://github.com/liangsu1210/c14-codex-task-manager.git
+git clone https://github.com/C14-design/c14-codex-task-manager.git
 cp -R c14-codex-task-manager/skills/c14-codex-task-manager ~/.codex/skills/
 ```
 
