@@ -19,12 +19,14 @@ For auto, use substantive user messages, not tool output. Do not rename existing
 tasks because an incidental message changes language.
 
 The bundled [default-name-pool.json](default-name-pool.json) contains aliases and
-canonical IDs. Reserve `wang-xifeng` for the manager. Select a currently available
+canonical IDs. Reserve `jia-mu` for the user-invoked senior reviewer and `wang-xifeng` for the daily manager. Select a currently available
 worker identity from the configured pool, checking every alias. Preserve custom
 spelling. A title beginning with a name plus a suffix also reserves it; a retired
 `退役｜...｜原...` title does not. Refresh relevant names before mutation. If a
 collision cannot be resolved, defer that name change without blocking unrelated
 work. Do not retire tasks just to obtain a name.
+
+Task titles in this team use the Chinese name followed immediately by the lowercase model family, for example `贾母astra`, `王熙凤sol`, `贾惜春luna`. Verify the actual model through current metadata or a focused local configuration record before assigning its suffix; a title is not proof of the model and renaming does not change it. Preserve unrelated tasks and retired history unless the user requests their renaming. Place the senior reviewer above the manager and workers within the managed team, preserving unrelated sidebar ordering. Senior-reviewer succession does not transfer the daily manager's execution ownership.
 
 ## Creation and transfer
 
@@ -35,8 +37,10 @@ work. Do not retire tasks just to obtain a name.
    invent a branch or assume a ready thread ID from a pending client ID.
 3. Prepare a concise current handoff. Create without forking history unless
    requested. Use a temporary successor title while the original name is owned.
-4. Send the precise assignment and callback requirement. Wait for acknowledgement
-   in bounded calls. Do not transfer overlapping writes before acknowledgement.
+4. Send the precise assignment and require an acknowledgement callback to the
+   manager task. End the turn if no other work is actionable; resume transfer
+   only when that callback arrives. Do not wait or poll, and do not transfer
+   overlapping writes before acknowledgement.
 5. Verify the successor understands source, owned files and pending acceptance;
    transfer ownership explicitly and notify affected workers once.
 6. Retire the previous owner only after safe transfer: rename as

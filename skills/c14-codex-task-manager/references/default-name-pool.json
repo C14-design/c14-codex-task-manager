@@ -1,14 +1,80 @@
 [
-  {"id":"lin-daiyu","zh":"林黛玉","ja":"林黛玉","en":"Lin Daiyu"},
-  {"id":"xue-baochai","zh":"薛宝钗","ja":"薛宝釵","en":"Xue Baochai"},
-  {"id":"jia-yuanchun","zh":"贾元春","ja":"賈元春","en":"Jia Yuanchun"},
-  {"id":"jia-tanchun","zh":"贾探春","ja":"賈探春","en":"Jia Tanchun"},
-  {"id":"shi-xiangyun","zh":"史湘云","ja":"史湘雲","en":"Shi Xiangyun"},
-  {"id":"miaoyu","zh":"妙玉","ja":"妙玉","en":"Miaoyu"},
-  {"id":"jia-yingchun","zh":"贾迎春","ja":"賈迎春","en":"Jia Yingchun"},
-  {"id":"jia-xichun","zh":"贾惜春","ja":"賈惜春","en":"Jia Xichun"},
-  {"id":"wang-xifeng","zh":"王熙凤","ja":"王熙鳳","en":"Wang Xifeng"},
-  {"id":"jia-qiaojie","zh":"贾巧姐","ja":"賈巧姐","en":"Jia Qiaojie"},
-  {"id":"li-wan","zh":"李纨","ja":"李紈","en":"Li Wan"},
-  {"id":"qin-keqing","zh":"秦可卿","ja":"秦可卿","en":"Qin Keqing"}
+  {
+    "id": "jia-mu",
+    "zh": "贾母",
+    "ja": "賈母",
+    "en": "Jia Mu"
+  },
+  {
+    "id": "lin-daiyu",
+    "zh": "林黛玉",
+    "ja": "林黛玉",
+    "en": "Lin Daiyu"
+  },
+  {
+    "id": "xue-baochai",
+    "zh": "薛宝钗",
+    "ja": "薛宝釵",
+    "en": "Xue Baochai"
+  },
+  {
+    "id": "jia-yuanchun",
+    "zh": "贾元春",
+    "ja": "賈元春",
+    "en": "Jia Yuanchun"
+  },
+  {
+    "id": "jia-tanchun",
+    "zh": "贾探春",
+    "ja": "賈探春",
+    "en": "Jia Tanchun"
+  },
+  {
+    "id": "shi-xiangyun",
+    "zh": "史湘云",
+    "ja": "史湘雲",
+    "en": "Shi Xiangyun"
+  },
+  {
+    "id": "miaoyu",
+    "zh": "妙玉",
+    "ja": "妙玉",
+    "en": "Miaoyu"
+  },
+  {
+    "id": "jia-yingchun",
+    "zh": "贾迎春",
+    "ja": "賈迎春",
+    "en": "Jia Yingchun"
+  },
+  {
+    "id": "jia-xichun",
+    "zh": "贾惜春",
+    "ja": "賈惜春",
+    "en": "Jia Xichun"
+  },
+  {
+    "id": "wang-xifeng",
+    "zh": "王熙凤",
+    "ja": "王熙鳳",
+    "en": "Wang Xifeng"
+  },
+  {
+    "id": "jia-qiaojie",
+    "zh": "贾巧姐",
+    "ja": "賈巧姐",
+    "en": "Jia Qiaojie"
+  },
+  {
+    "id": "li-wan",
+    "zh": "李纨",
+    "ja": "李紈",
+    "en": "Li Wan"
+  },
+  {
+    "id": "qin-keqing",
+    "zh": "秦可卿",
+    "ja": "秦可卿",
+    "en": "Qin Keqing"
+  }
 ]

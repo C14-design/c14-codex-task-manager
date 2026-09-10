@@ -9,12 +9,18 @@ and accepts their results.
 - **Review:** inspect and recommend without task mutations.
 - **Dispatch:** deliver the requested brief and identify its acceptance owner.
 - **Deliver:** coordinate through implementation and acceptance, using callbacks
-  and bounded waits rather than stopping after dispatch.
+  rather than polling or waiting for workers.
 
 Context compaction is a recovery signal, not an automatic retirement counter.
 Creation and replacement require an explicit user request. A prepared handoff
 can be useful without creating a new task. Operational ownership transfer is
 verified separately from pin order, naming and browser-tab presentation.
+
+贾母astra is the user-invoked senior reviewer and stays idle between requested
+reviews. 王熙凤sol (Sol / High) owns daily dispatch and independent acceptance;
+Luna workers implement bounded assignments. Failed reviews return precise
+corrections to the owning worker; every dispatch names its recipient and
+acceptance owner. Team titles include the verified model-family suffix.
 
 Role preferences live in the skill's single preferences table. Explicit user
 choices and current task-tool constraints take precedence. Existing task settings
